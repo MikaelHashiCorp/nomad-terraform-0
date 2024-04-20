@@ -6,9 +6,7 @@ variable "name" {
 }
 
 variable "whitelist_ip" {
-  description = "A list of IP address to grant access via the LBs."
-  type        = list(string)
-  default     = ["0.0.0.0/0"]
+  description = "IP to whitelist for the security groups (set 0.0.0.0/0 for world)"
 }
 
 variable "region" {

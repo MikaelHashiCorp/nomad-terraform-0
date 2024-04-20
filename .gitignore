@@ -1,4 +1,4 @@
 
 .DS_Store
-.tfvars
-terraform/aws/env/us-east/terraform.tfvars
+*.tfvars
+.terraform
