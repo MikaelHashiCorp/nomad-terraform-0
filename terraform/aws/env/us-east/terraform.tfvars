@@ -26,16 +26,16 @@ name = "nomad"
 #  - If it is not provided here, it will be requested interactively.
 ami = "ami-09730698a875f6abd"
 
-# `server_instance_type` ("t2.medium"), `client_instance_type` ("t2.medium"),
+# `server_instance_type` ("t3a.medium"), `client_instance_type` ("t3a.medium"),
 # `server_count` (3),`client_count` (4) - These options control instance size
 # and count. They should be set according to your needs.
 #
 # * For the GPU demos, we used p3.2xlarge client instances.
-# * For the Spark demos, you will need at least 4 t2.medium client
+# * For the Spark demos, you will need at least 4 t3a.medium client
 #   instances.
-#server_instance_type = "t2.medium"
+#server_instance_type = "t3a.medium"
 #server_count         = "3"
-#client_instance_type = "t2.medium"
+#client_instance_type = "t3a.medium"
 #client_count         = "4"
 
 # `whitelist_ip` (required) - IP to whitelist for the security groups (set

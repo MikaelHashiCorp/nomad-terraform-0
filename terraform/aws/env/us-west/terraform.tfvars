@@ -1,0 +1,9 @@
+region                  = "us-west-2"
+ami                     = "ami-009611802f936cef9"
+server_instance_type    = "t3a.medium" 
+server_count            = "1"
+client_instance_type    = "t3a.medium"
+client_count            = "1"
+key_name                = "support_consul_dev-access-key-mikael"
+name                    = "mhc-mws-aws" 
+whitelist_ip            = ["67.168.24.157/32", "97.113.132.34/32"]  # ["174.001.01.248/32", "97.000.000.22/

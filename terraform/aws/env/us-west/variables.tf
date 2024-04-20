@@ -6,12 +6,14 @@ variable "name" {
 }
 
 variable "whitelist_ip" {
-  description = "IP to whitelist for the security groups (set 0.0.0.0/0 for world)"
+  description = "A list of IP address to grant access via the LBs."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
 }
 
 variable "region" {
   description = "The AWS region to deploy to."
-  default     = "us-east-1"
+  default     = "us-west-2"
 }
 
 variable "ami" {
