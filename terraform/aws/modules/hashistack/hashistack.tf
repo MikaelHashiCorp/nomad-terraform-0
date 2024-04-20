@@ -52,7 +52,15 @@ resource "aws_security_group" "server_lb" {
   name   = "${var.name}-server-lb"
   vpc_id = data.aws_vpc.default.id
 
-  # Nomad
+  # Consul
+  ingress {
+    from_port   = 8500
+    to_port     = 8500
+    protocol    = "tcp"
+    cidr_blocks = [var.whitelist_ip]
+  }
+
+    # Nomad
   ingress {
     from_port   = 4646
     to_port     = 4646
@@ -60,10 +68,10 @@ resource "aws_security_group" "server_lb" {
     cidr_blocks = [var.whitelist_ip]
   }
 
-  # Consul
+    # Vault
   ingress {
-    from_port   = 8500
-    to_port     = 8500
+    from_port   = 8200
+    to_port     = 8200
     protocol    = "tcp"
     cidr_blocks = [var.whitelist_ip]
   }
@@ -87,15 +95,6 @@ resource "aws_security_group" "primary" {
     cidr_blocks = [var.whitelist_ip]
   }
 
-  # Nomad
-  ingress {
-    from_port       = 4646
-    to_port         = 4646
-    protocol        = "tcp"
-    cidr_blocks     = [var.whitelist_ip]
-    security_groups = [aws_security_group.server_lb.id]
-  }
-
   # Fabio
   ingress {
     from_port   = 9998
@@ -108,6 +107,24 @@ resource "aws_security_group" "primary" {
   ingress {
     from_port       = 8500
     to_port         = 8500
+    protocol        = "tcp"
+    cidr_blocks     = [var.whitelist_ip]
+    security_groups = [aws_security_group.server_lb.id]
+  }
+
+    # Nomad
+  ingress {
+    from_port       = 4646
+    to_port         = 4646
+    protocol        = "tcp"
+    cidr_blocks     = [var.whitelist_ip]
+    security_groups = [aws_security_group.server_lb.id]
+  }
+
+    # Vault
+  ingress {
+    from_port       = 8200
+    to_port         = 8200
     protocol        = "tcp"
     cidr_blocks     = [var.whitelist_ip]
     security_groups = [aws_security_group.server_lb.id]
