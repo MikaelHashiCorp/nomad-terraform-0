@@ -30,7 +30,7 @@ output "IP_Addresses" {
 
   Set the following for access from the Nomad CLI:
 
-    export CONSUL_HTTP_ADDR=http://${module.hashistack.server_lb_ip}:8600
+    export CONSUL_HTTP_ADDR=http://${module.hashistack.server_lb_ip}:8500
     export NOMAD_ADDR=http://${module.hashistack.server_lb_ip}:4646
     export VAULT_ADDR=http://${module.hashistack.server_lb_ip}:8200
 

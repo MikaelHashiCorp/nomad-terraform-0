@@ -1,0 +1,87 @@
+# us-west/post-install-script.tf
+resource "local_file" "env_script" {
+  content = <<-EOF
+    #!/bin/bash
+    # Environment variable setup for HashiStack
+    export CONSUL_HTTP_ADDR=http://${module.hashistack.server_lb_ip}:8600
+    export NOMAD_ADDR=http://${module.hashistack.server_lb_ip}:4646
+    export VAULT_ADDR=http://${module.hashistack.server_lb_ip}:8200
+  EOF
+  filename = "${path.module}/set_env.sh"
+
+  provisioner "local-exec" {
+  command = "source ${self.filename}"
+  }
+  
+  # Ensuring this runs after the hashistack module is fully applied
+  depends_on = [module.hashistack]
+}
+
+resource "local_file" "remote_script" {
+  content = <<-EOF
+    #!/bin/bash
+
+    # Populate variables
+    INSTANCE_IPS=(
+      $(echo "${join("\n", module.hashistack.client_public_ips)}" | tr '\n' ' ')
+      $(echo "${join("\n", module.hashistack.server_public_ips)}" | tr '\n' ' ')
+    )
+    CLIENT_COUNT=${var.client_count}
+    SERVER_COUNT=${var.server_count}
+    KEY_NAME=${var.key_name}
+
+    # Common function to wait for apt processes to finish
+    wait_for_apt() {
+      while pgrep -u root 'apt|dpkg' >/dev/null; do
+        sleep 10
+      done
+    }
+
+    # Update and install required packages
+    update_and_install() {
+      sudo apt-get update
+      sudo apt-get install -y ec2-instance-connect awscli net-tools
+    }
+
+    # Modify directory permissions and ownership
+    modify_permissions() {
+      sudo find /opt -type d -exec chmod g+s {} \;
+      sudo chown -R root:ubuntu /opt
+      sudo chmod -R g+rX /opt
+    }
+
+    # Set dynamic PS1 and other variables in .bashrc
+    update_bashrc() {
+      cat <<EOL >> ~/.bashrc
+        alias env="env -0 | sort -z | tr '\\0' '\\n'"
+        export AWS_DEFAULT_REGION=\$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed "s/.$//")
+        export INSTANCE_NAME=\$(curl -s http://169.254.169.254/latest/meta-data/tags/instance/Name)
+        export PROMPTID=\$(curl -s http://169.254.169.254/latest/meta-data/tags/instance/PromptID)
+        export PUBIP=\$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+        export PRIIP=\$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+        if [[ \$TERM_PROGRAM == "WarpTerminal" ]]; then
+          PS1="\\[\\033[0;33m\\](\$PROMPTID)[Int: \$PRIIP / Ext: \$PUBIP] \\[\\033[01;32m\\]\\u\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ "
+        else
+          PS1="\\[\\033[0;33m\\](\$PROMPTID)[Int: \$PRIIP / Ext: \$PUBIP]\\[\\033[0m\\]\\n\\[\\033[01;32m\\]\\u\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ "
+        fi
+      EOL
+    }
+
+    # SSH into each instance and perform setup
+    for ip in "${INSTANCE_IPS[@]}"; do
+      ssh -i "~/.ssh/${KEY_NAME}.pem" ubuntu@$ip 'bash -s' <<EOF
+        $(typeset -f)
+        wait_for_apt
+        update_and_install
+        modify_permissions
+        update_bashrc
+        # Additional setup here as per the original script
+      EOF
+    done
+  EOF
+
+  filename = "${path.module}/remote-config.sh"
+
+  # Ensuring this runs after the hashistack module is fully applied
+  depends_on = [local_file.env_script]
+}

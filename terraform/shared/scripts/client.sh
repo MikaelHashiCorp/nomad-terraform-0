@@ -25,6 +25,34 @@ else
   IP_ADDRESS=$(curl http://instance-data/latest/meta-data/local-ipv4)
 fi
 
+if [ "$CLOUD" = "aws" ]; then
+  while pgrep -u root 'apt|dpkg' >/dev/null; do
+    sleep 10
+  done
+  sudo apt-get update
+  sudo apt-get upgrade
+  sudo apt-get install -y ec2-instance-connect awscli net-tools
+  sudo find /opt -type d -exec chmod g+s {} \;
+  sudo chown -R root:ubuntu /opt
+  sudo chmod -R g+rX /opt
+  sudo mkdir /opt/consul/logs
+  sudo mkdir /opt/nomad/logs
+  echo "alias env="env -0 | sort -
+  echo "alias env="env -0 | sort -z | tr '\\0' '\\n'"" >> ~/.bashrc
+  if ! grep -Fxq 'PS1=\"$PROMPTID)[Int:\"' ~/.bashrc ; then
+    echo "export AWS_DEFAULT_REGION=\$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/.$//')" >> ~/.bashrc
+    echo "export INSTANCE_NAME=\$(curl -s http://169.254.169.254/latest/meta-data/tags/instance/Name)" >> ~/.bashrc
+    echo "export PROMPTID=\$(curl -s http://169.254.169.254/latest/meta-data/tags/instance/PromptID)" >> ~/.bashrc
+    echo "export PUBIP=\$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)" >> ~/.bashrc
+    echo "export PRIIP=\$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)" >> ~/.bashrc
+    echo 'if [[ $TERM_PROGRAM == "WarpTerminal" ]]; then
+      PS1="\\[\\033[0;33m\\](\$PROMPTID)[Int: \$PRIIP / Ext: \$PUBIP] \\[\\033[01;32m\\]\\u\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ "
+    else
+      PS1="\\[\\033[0;33m\\](\$PROMPTID)[Int: \$PRIIP / Ext: \$PUBIP]\\[\\033[0m\\]\\n\\[\\033[01;32m\\]\\u\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ "
+    fi' >> ~/.bashrc
+  fi
+fi
+
 # Systemd-resolved config to enable .consul domain lookups using the local Consul agent
 # https://developer.hashicorp.com/consul/tutorials/networking/dns-forwarding#systemd-resolved-setup
 mkdir -p /etc/systemd/resolved.conf.d/

@@ -208,15 +208,18 @@ resource "aws_instance" "server" {
   count                  = var.server_count
 
   # instance tags
-  tags = merge(
-    {
-      "Name" = "${var.name}-server-${count.index}"
-    },
-    {
-      "${var.retry_join.tag_key}" = "${var.retry_join.tag_value}"
-    },
-  )
+  tags = {
+    Name            = "${var.name}-server-${count.index}"
+    PromptID        = "server-${count.index}"
+    ConsulAutoJoin  = "auto-join"
+  }
 
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "optional"
+    http_put_response_hop_limit = 1
+    instance_metadata_tags      = "enabled"
+  }
   root_block_device {
     volume_type           = "gp2"
     volume_size           = var.root_block_device_size
@@ -248,14 +251,18 @@ resource "aws_instance" "client" {
   depends_on             = [aws_instance.server]
 
   # instance tags
-  tags = merge(
-    {
-      "Name" = "${var.name}-client-${count.index}"
-    },
-    {
-      "${var.retry_join.tag_key}" = "${var.retry_join.tag_value}"
-    },
-  )
+  tags = {
+    Name            = "${var.name}-client-${count.index}"
+    PromptID        = "client-${count.index}"
+    ConsulAutoJoin  = "auto-join"
+  }
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "optional"
+    http_put_response_hop_limit = 1
+    instance_metadata_tags      = "enabled"
+  }
 
   root_block_device {
     volume_type           = "gp2"
@@ -332,18 +339,31 @@ resource "aws_elb" "server_lb" {
   availability_zones = distinct(aws_instance.server.*.availability_zone)
   internal           = false
   instances          = aws_instance.server.*.id
-  listener {
-    instance_port     = 4646
-    instance_protocol = "http"
-    lb_port           = 4646
-    lb_protocol       = "http"
-  }
+
+  # Consul
   listener {
     instance_port     = 8500
     instance_protocol = "http"
     lb_port           = 8500
     lb_protocol       = "http"
   }
+  
+  # Nomad
+  listener {
+    instance_port     = 4646
+    instance_protocol = "http"
+    lb_port           = 4646
+    lb_protocol       = "http"
+  }
+
+  # Vault
+    listener {
+    instance_port     = 8200
+    instance_protocol = "http"
+    lb_port           = 8200
+    lb_protocol       = "http"
+  }
+
   security_groups = [aws_security_group.server_lb.id]
 }
 
