@@ -3,3 +3,4 @@
 *.tfvars
 .terraform
 *.tfstate*
+terraform/aws/env/us-west/set_env.sh

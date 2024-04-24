@@ -1,0 +1,27 @@
+{
+	"folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "../../opt"
+    },
+    {
+      "path": "../../ops"
+    },
+    {
+      "path": "../../etc/consul.d"
+    },
+    {
+      "path": "../../etc/nomad.d"
+    },
+    {
+      "path": "../../etc/vault.d"
+    },
+    {
+      "name": "shared (local)",
+      "uri": "file:///Users/mikael/1-support/shared"
+    }
+  ],
+  "settings": {}
+}
