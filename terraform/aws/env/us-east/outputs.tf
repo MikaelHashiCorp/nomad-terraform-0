@@ -24,9 +24,8 @@ executing:
 
 Simply wait a few seconds and rerun the command if this occurs.
 
-The Consul UI can be accessed at http://${module.hashistack.server_lb_ip}:8500/ui.
 The Nomad UI can be accessed at http://${module.hashistack.server_lb_ip}:4646/ui.
-The Vault UI can be accessed at http://${module.hashistack.server_lb_ip}:8200/ui.
+The Consul UI can be accessed at http://${module.hashistack.server_lb_ip}:8500/ui.
 
 Set the following for access from the Nomad CLI:
 
