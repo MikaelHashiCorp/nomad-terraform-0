@@ -37,11 +37,20 @@ if [ "$CLOUD" = "aws" ]; then
   sudo apt-get upgrade
   sudo apt-get install -y ec2-instance-connect awscli net-tools
   sudo find /opt -type d -exec chmod g+s {} \;
-  sudo chown -R root:ubuntu /opt
-  sudo chmod -R g+rX /opt
-  sudo chmod -R 755 /opt
+
   sudo mkdir /opt/consul/logs
   sudo mkdir /opt/nomad/logs
+  sudo mkdir /opt/vault/logs
+  sudo chown -R consul:ubuntu ./consul
+  sudo chown -R nomad:ubuntu ./nomad
+  sudo chown -R vault:ubuntu ./vault
+  sudo chmod -R 755 opt/consul
+  sudo chmod -R 755 opt/nomad
+  sudo chmod -R 755 opt/vault
+  sudo find /opt -type d -exec chmod g+s {} \;
+  sudo chown -R root:ubuntu /opt
+  sudo chmod -R g+rX /opt
+  
   echo "alias env="env -0 | sort -z | tr '\\0' '\\n'"" >> ~/.bashrc
   if ! grep -Fxq 'PS1=\"$PROMPTID)[Int:\"' ~/.bashrc ; then
     echo "export AWS_DEFAULT_REGION=\$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/.$//')" >> ~/.bashrc
@@ -58,10 +67,10 @@ if [ "$CLOUD" = "aws" ]; then
 fi
 
 # Consul
-sed -i "s/IP_ADDRESS/$IP_ADDRESS/g" $CONFIGDIR/consul.hcl
-sed -i "s/SERVER_COUNT/$SERVER_COUNT/g" $CONFIGDIR/consul.hcl
-sed -i "s/RETRY_JOIN/$RETRY_JOIN/g" $CONFIGDIR/consul.hcl
-sudo cp $CONFIGDIR/consul.hcl $CONSULCONFIGDIR
+sed -i "s/IP_ADDRESS/$IP_ADDRESS/g" $CONFIGDIR/consul_server.hcl
+sed -i "s/SERVER_COUNT/$SERVER_COUNT/g" $CONFIGDIR/consul_server.hcl
+sed -i "s/RETRY_JOIN/$RETRY_JOIN/g" $CONFIGDIR/consul_server.hcl
+sudo cp $CONFIGDIR/consul_server.hcl $CONSULCONFIGDIR
 
 sudo systemctl enable consul.service --now
 sleep 10

@@ -11,13 +11,13 @@ export DEBIAN_FRONTEND=noninteractive
 cd /ops
 
 CONFIGDIR=/ops/shared/config
-sudo apt-get install -yq  apt-utils
+sudo apt-get install -yq  apt-utils jq
 
 # Install HashiCorp products
-CONSULVERSION=1.18.1
-VAULTVERSION=1.16.1
-NOMADVERSION=1.7.7
-CONSULTEMPLATEVERSION=0.37.4
+CONSULVERSION=$(curl -sL https://api.releases.hashicorp.com/v1/releases/consul/latest | jq -r '.version')
+NOMADVERSION=$(curl -sL https://api.releases.hashicorp.com/v1/releases/nomad/latest | jq -r '.version')
+VAULTVERSION=$(curl -sL https://api.releases.hashicorp.com/v1/releases/vault/latest | jq -r '.version')
+CONSULTEMPLATEVERSION=$(curl -sL https://api.releases.hashicorp.com/v1/releases/consul-template/latest | jq -r '.version')
 
 sudo apt-get update && sudo apt-get install gpg
 wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
@@ -31,7 +31,7 @@ sudo apt-get install -yq consul="${CONSULVERSION}*" \
 # Dependencies
 sudo apt-get install -yq software-properties-common
 sudo apt-get update
-sudo apt-get install -yq unzip tree redis jq curl tmux openjdk-8-jdk
+sudo apt-get install -yq unzip tree redis curl tmux openjdk-8-jdk
 
 # Disable the firewall
 sudo ufw disable || echo "ufw not installed"

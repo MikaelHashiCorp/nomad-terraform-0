@@ -29,14 +29,23 @@ if [ "$CLOUD" = "aws" ]; then
   while pgrep -u root 'apt|dpkg' >/dev/null; do
     sleep 10
   done
-  sudo apt-get update
   sudo apt-get upgrade
   sudo apt-get install -y ec2-instance-connect awscli net-tools
   sudo find /opt -type d -exec chmod g+s {} \;
-  sudo chown -R root:ubuntu /opt
-  sudo chmod -R g+rX /opt
+
   sudo mkdir /opt/consul/logs
   sudo mkdir /opt/nomad/logs
+  sudo mkdir /opt/vault/logs
+  sudo chown -R consul:ubuntu ./consul
+  sudo chown -R nomad:ubuntu ./nomad
+  sudo chown -R vault:ubuntu ./vault
+  sudo chmod -R 755 opt/consul
+  sudo chmod -R 755 opt/nomad
+  sudo chmod -R 755 opt/vault
+  sudo find /opt -type d -exec chmod g+s {} \;
+  sudo chown -R root:ubuntu /opt
+  sudo chmod -R g+rX /opt
+  
   echo "alias env="env -0 | sort -
   echo "alias env="env -0 | sort -z | tr '\\0' '\\n'"" >> ~/.bashrc
   if ! grep -Fxq 'PS1=\"$PROMPTID)[Int:\"' ~/.bashrc ; then
@@ -68,7 +77,7 @@ systemctl restart systemd-resolved.service
 # Consul
 sed -i "s/IP_ADDRESS/$IP_ADDRESS/g" $CONFIGDIR/consul_client.hcl
 sed -i "s/RETRY_JOIN/$RETRY_JOIN/g" $CONFIGDIR/consul_client.hcl
-sudo cp $CONFIGDIR/consul_client.hcl $CONSULCONFIGDIR/consul.hcl
+sudo cp $CONFIGDIR/consul_client.hcl $CONSULCONFIGDIR/consul_client.hcl
 
 sudo systemctl enable consul.service --now
 sleep 10
@@ -88,7 +97,7 @@ if [[ `wget -S --spider $NOMAD_BINARY  2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
   sudo chown root:root /usr/bin/nomad
 fi
 
-sudo cp $CONFIGDIR/nomad_client.hcl $NOMADCONFIGDIR/nomad.hcl
+sudo cp $CONFIGDIR/nomad_client.hcl $NOMADCONFIGDIR/nomad_client.hcl
 sudo systemctl enable nomad.service --now
 sleep 10
 
