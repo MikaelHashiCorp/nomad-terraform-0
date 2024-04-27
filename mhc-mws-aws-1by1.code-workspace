@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"name": "mhc-mws-aws-1by1",
+			"path": "."
+		},
+		{
+			"name": ".ssh",
+			"path": "../../../../.ssh"
+		},
+		{
+			"path": "../../../../1-support/shared"
+		}
+	],
+  "settings": {}
+}
